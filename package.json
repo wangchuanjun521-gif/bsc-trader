@@ -1,0 +1,16 @@
+{
+  "name": "bsc-trader",
+  "version": "2.0.0",
+  "type": "module",
+  "description": "AI-driven BSC trading bot with web dashboard",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "keywords": ["trading", "binance", "ai", "bot", "dashboard"],
+  "license": "MIT"
+}
