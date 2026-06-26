@@ -50,16 +50,15 @@ function httpsGet(url, timeout = 10000) {
 
 // ═══════════════════════════════════════════
 //  Token Filter
-// ═══════════════════════════════════════════
-function parseGainers(raw) {
+// ═══════════════════════════════════════════function parseGainers(raw) {
+  log(`parseGainers: type=${typeof raw} arr=${Array.isArray(raw)}`);
   const arr = Array.isArray(raw) ? raw : (raw?.data || []);
   if (!Array.isArray(arr) || arr.length === 0) {
-    log('⚠️ parseGainers: 数据为空, type=' + typeof raw);
     return [];
   }
   return arr.filter(d => {
     if (!d.symbol || !d.symbol.endsWith('USDT')) return false;
-    if (['UP', 'DOWN', 'BEAR', 'BULL'].some(k => d.symbol.includes(k))) return false;
+    if (['UP','DOWN','BEAR','BULL'].some(k => d.symbol.includes(k))) return false;
     const chg = parseFloat(d.priceChangePercent || 0);
     if (chg < (CONFIG.MIN_CHANGE || 1) || chg > (CONFIG.MAX_CHANGE || 100)) return false;
     return true;
