@@ -52,22 +52,20 @@ function httpsGet(url, timeout = 10000) {
 //  Token Filter
 // ═══════════════════════════════════════════
 function parseGainers(raw) {
+  log(`🔍 parseGainers输入: type=${typeof raw} isArray=${Array.isArray(raw)} preview=${JSON.stringify(raw).slice(0,200)}`);
   const arr = Array.isArray(raw) ? raw : (raw?.data || []);
-  if (!Array.isArray(arr) || arr.length === 0) return [];
+  if (!Array.isArray(arr) || arr.length === 0) {
+    log(`⚠️ parseGainers: 解析后数组为空`);
+    return [];
+  }
   return arr.filter(d => {
     if (!d.symbol || !d.symbol.endsWith('USDT')) return false;
-    if (['UP', 'DOWN', 'BEAR', 'BULL', 'BULLA', 'BEARA'].some(k => d.symbol.includes(k))) return false;
+    if (['UP', 'DOWN', 'BEAR', 'BULL'].some(k => d.symbol.includes(k))) return false;
     const chg = parseFloat(d.priceChangePercent || 0);
-    return chg >= CONFIG.MIN_CHANGE && chg <= CONFIG.MAX_CHANGE && parseFloat(d.quoteVolume || 0) >= CONFIG.MIN_LIQUIDITY;
-  }).map(d => ({
-    symbol: d.symbol,
-    price: parseFloat(d.lastPrice),
-    changePercent: parseFloat(d.priceChangePercent),
-    volume: parseFloat(d.quoteVolume || 0),
-    high24h: parseFloat(d.highPrice || 0),
-    low24h: parseFloat(d.lowPrice || 0),
-    timestamp: Date.now(),
-  })).sort((a, b) => b.changePercent - a.changePercent).slice(0, 30);
+    if (chg < (CONFIG.MIN_CHANGE || 1) || chg > (CONFIG.MAX_CHANGE || 100)) return false;
+    return true;
+  }).sort((a, b) => parseFloat(b.priceChangePercent || 0) - parseFloat(a.priceChangePercent || 0))
+    .slice(0, 30);
 }
 
 // ═══════════════════════════════════════════
