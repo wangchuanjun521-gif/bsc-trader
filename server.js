@@ -52,10 +52,9 @@ function httpsGet(url, timeout = 10000) {
 //  Token Filter
 // ═══════════════════════════════════════════
 function parseGainers(raw) {
-  log(`🔍 parseGainers输入: type=${typeof raw} isArray=${Array.isArray(raw)} preview=${JSON.stringify(raw).slice(0,200)}`);
   const arr = Array.isArray(raw) ? raw : (raw?.data || []);
   if (!Array.isArray(arr) || arr.length === 0) {
-    log(`⚠️ parseGainers: 解析后数组为空`);
+    log('⚠️ parseGainers: 数据为空, type=' + typeof raw);
     return [];
   }
   return arr.filter(d => {
