@@ -77,21 +77,52 @@ async function fetchTopGainers() {
   // Primary: Binance public API
   try {
     const raw = await httpsGet(CONFIG.BINANCE_TICKER);
-    const gainers = parseGainers(raw);
+    log(`🔍 接口1原始数据: type=${typeof raw} isArray=${Array.isArray(raw)} len=${Array.isArray(raw) ? raw.length : 'N/A'} preview=${JSON.stringify(raw).slice(0,200)}`);
+    
+    let gainers = [];
+    if (Array.isArray(raw)) {
+      gainers = raw.filter(item => {
+        if (!item || !item.symbol) return false;
+        const sym = item.symbol;
+        if (!sym.endsWith('USDT')) return false;
+        if (sym.includes('DOWN') || sym.includes('UP') || sym.includes('BULL') || sym.includes('BEAR')) return false;
+        if (sym.includes('_')) return false;
+        const chg = parseFloat(item.priceChangePercent || 0);
+        if (chg < (CONFIG.MIN_CHANGE || 1) || chg > (CONFIG.MAX_CHANGE || 100)) return false;
+        return true;
+      }).sort((a, b) => parseFloat(b.priceChangePercent || 0) - parseFloat(a.priceChangePercent || 0))
+        .slice(0, 30);
+    }
+    
+    log(`⚠️ 接口1返回 ${Array.isArray(raw) ? raw.length : '?'} 条，过滤后${gainers.length}条`);
+    
     if (gainers.length > 0) {
       state.gainers = gainers;
       state.lastGainersUpdate = Date.now();
-      log(`✅ 涨幅榜更新: ${gainers.length} 个代币 (共${Array.isArray(raw) ? raw.length : '?'}条)`);
+      log(`✅ 涨幅榜更新: ${gainers.length} 个代币`);
       return;
     }
-    log(`🔍 DEBUG type=${typeof raw} isArray=${Array.isArray(raw)} data=${JSON.stringify(raw).slice(0,200)}`);
-    log(`⚠️ 接口1返回 ${Array.isArray(raw) ? raw.length : '?'} 条, 过滤后0条`);
-  } catch (e) { log(`❌ 接口1失败: ${e.message?.slice(0, 100)}`); }
-
-  // Fallback: Binance internal API (may be deprecated)
+  } catch(e) { log(`❌ 接口1失败: ${e.message?.slice(0, 100)}`); }
+  
+  // Fallback
   try {
-    const raw = await httpsGet('https://www.binance.com/bapi/asset/v2/public/asset-service/product/get-market-change?limit=500&rankBy=asc&quoteAsset=USDT');
-    const gainers = parseGainers(raw);
+    const raw = await httpsGet('https://www.binance.com/bapi/asset/v2/public/asset-service/product/get-products?includeEtf=false');
+    log(`🔍 备用接口原始数据: type=${typeof raw} isArray=${Array.isArray(raw)} preview=${JSON.stringify(raw).slice(0,200)}`);
+    
+    let gainers = [];
+    const list = raw?.data || raw;
+    if (Array.isArray(list)) {
+      gainers = list.filter(item => {
+        if (!item || !item.s) return false;
+        const sym = item.s;
+        if (!sym.endsWith('USDT')) return false;
+        const chg = parseFloat(item.c || item.p || 0);
+        if (chg < (CONFIG.MIN_CHANGE || 1) || chg > (CONFIG.MAX_CHANGE || 100)) return false;
+        return true;
+      }).sort((a, b) => parseFloat(b.c || 0) - parseFloat(a.c || 0))
+        .slice(0, 30);
+    }
+    
     if (gainers.length > 0) {
       state.gainers = gainers;
       state.lastGainersUpdate = Date.now();
@@ -99,7 +130,7 @@ async function fetchTopGainers() {
     } else {
       log(`⚠️ 备用接口过滤后0条`);
     }
-  } catch (e) { log(`❌ 备用接口失败: ${e.message?.slice(0, 100)}`); }
+  } catch(e) { log(`❌ 备用接口失败: ${e.message?.slice(0, 100)}`); }
 }
 
 async function fetchKline(symbol) {
