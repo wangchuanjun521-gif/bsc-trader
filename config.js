@@ -19,10 +19,10 @@ export const CONFIG = {
   TRAILING_STOP: 0.08,        // 8% drawdown from peak triggers sell
 
   // Token Filters
-  MIN_LIQUIDITY: 5000,        // min 24h quote volume (USDT)
+  MIN_LIQUIDITY: 1000,        // min 24h quote volume (USDT)
   MAX_TAX: 10,                // max buy/sell tax %
-  MIN_CHANGE: 3,              // min 24h price change %
-  MAX_CHANGE: 50,             // max 24h price change %
+  MIN_CHANGE: 1,              // min 24h price change %
+  MAX_CHANGE: 100,             // max 24h price change %
   KLINE_MIN: 30,              // min kline data points required
 
   // Account
