@@ -84,6 +84,7 @@ async function fetchTopGainers() {
       log(`✅ 涨幅榜更新: ${gainers.length} 个代币 (共${Array.isArray(raw) ? raw.length : '?'}条)`);
       return;
     }
+    log(`🔍 DEBUG type=${typeof raw} isArray=${Array.isArray(raw)} data=${JSON.stringify(raw).slice(0,200)}`);
     log(`⚠️ 接口1返回 ${Array.isArray(raw) ? raw.length : '?'} 条, 过滤后0条`);
   } catch (e) { log(`❌ 接口1失败: ${e.message?.slice(0, 100)}`); }
 
