@@ -75,9 +75,9 @@ async function fetchTopGainers() {
     const raw = await httpsGet(CONFIG.BINANCE_TICKER);
     log(`🔍 接口1原始数据: type=${typeof raw} isArray=${Array.isArray(raw)} len=${Array.isArray(raw) ? raw.length : 'N/A'} preview=${JSON.stringify(raw).slice(0,200)}`);
     
-    let gainers = [];
-    if (Array.isArray(raw)) {
-      gainers = raw.filter(item => {
+    let gainers = [];const arr = Array.isArray(raw) ? raw : (raw?.data || []);
+if (arr.length > 0) {
+  gainers = arr.filter(item => {
         if (!item || !item.symbol) return false;
         const sym = item.symbol;
         if (!sym.endsWith('USDT')) return false;
